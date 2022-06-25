@@ -7,78 +7,38 @@ router.get('/', (req, res) => {
   // find all categories
   // be sure to include its associated Products
   Category.findAll({
-    attributes: ['id', 'category_name'],
-    include: [
-      {
-        model: Product,
-        attributes: ['id', 'product_name', 'price', 'stock'],
-      },
-    ],
+    // include the associated products
+    include: [{
+      model: Product,
+      as: 'products',
+    }],
   })
-  .then((dbCategoryData) => {
-    // We want to transform the raw data from the database into the format we want to
-    // send to the client.
-    const categories = dbCategoryData.map((category) => {
-      return {
-        id: category.id,
-        category_name: category.category_name,
-        products: category.products.map((product) => {
-          return {
-            id: product.id,
-            product_name: product.product_name,
-            price: product.price,
-            stock: product.stock,
-          };
-        }),
-      };
-    }
-    )})
-    .then((categories) => {
-      res.json(categories);
-    })
-    .catch((err) => {
-      res.status(500).json(err);
-    });
+  .then((categories) => res.json(categories))
+  .catch((err) => res.status(500).json({ error: err.message }));
 });
 
 router.get('/:id', (req, res) => {
   // find one category by its `id` value
   // be sure to include its associated Products
-  Category.findOne({
-    where: {
-      id: req.params.id,
-    },
-    attributes: ['id', 'category_name'],
-    include: [
-      {
-        model: Product,
-        attributes: ['id', 'product_name', 'price', 'stock'],
-      },
-    ],
+  Category.findByPk(req.params.id, {
+    include: [{
+      model: Product,
+      as: 'products',
+    }],
   })
-  .then((dbCategoryData) => {
-    // We want to transform the raw data from the database into the format we want to
-    // send to the client.
-    const category = {
-      id: dbCategoryData.id,
-      category_name: dbCategoryData.category_name,
-      products: dbCategoryData.products.map((product) => {
-        return {
-          id: product.id,
-          product_name: product.product_name,
-          price: product.price,
-          stock: product.stock,
-        };
-      }),
-    };
-  })})
-  .then((category) => {
-    res.json(category);
+  .then(dbCategoryData => {
+    if(!dbCategoryData) {
+      res.status(404).json({ message: 'No category found with this id' });
+      return;
+    } else {
+    res.json(dbCategoryData)
+    }
   })
-  .catch((err) => {
-  res.status(500).json(err);
+  .catch(err => {
+    console.log(err);
+    res.status(500).json(err);
   });
-
+});
 
 
 router.post('/', (req, res) => {

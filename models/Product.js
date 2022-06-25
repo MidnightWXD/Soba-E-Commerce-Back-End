@@ -28,7 +28,6 @@ Product.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       isInt: true,
-      defaultValue: 10,
     },
     catagory_id: {
       type: DataTypes.INTEGER,
